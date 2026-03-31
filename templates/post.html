@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <article class="blog-post">
+            <h1 class="display-5 fw-bold mb-3">{{ post.title }}</h1>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 text-muted">
+                <div>Автор: {{ post.author }}</div>
+                <div>Дата публикации: {{ post.date.strftime('%d.%m.%Y') }}</div>
+            </div>
+            
+            <div class="mb-4">
+                <img src="{{ url_for('static', filename='images/' + post.image_id) }}" 
+                     class="img-fluid rounded w-100" alt="{{ post.title }}">
+            </div>
+            
+            <div class="blog-post-text mb-5">
+                {{ post.text | safe }}
+            </div>
+            
+            <div class="comments-section mt-5">
+                <h3 class="mb-4">Оставьте комментарий</h3>
+                <form method="POST" action="{{ url_for('post', index=index) }}" class="mb-5">
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Ваш комментарий</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </form>
+                
+                <!-- Комментарии -->
+                <h3 class="mb-4">Комментарии</h3>
+                {% if post.comments %}
+                    {% for comment in post.comments %}
+                        <div class="comment mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 50px; height: 50px;">
+                                        <span class="text-white fw-bold">{{ comment.author[0] }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="mt-0">{{ comment.author }}</h5>
+                                        <small class="text-muted">{{ comment.date.strftime('%d.%m.%Y %H:%M') if comment.date else 'Только что' }}</small>
+                                    </div>
+                                    <p>{{ comment.text }}</p>
+                                    
+                                    {% if comment.replies %}
+                                        <div class="replies mt-3 ms-4">
+                                            {% for reply in comment.replies %}
+                                                <div class="d-flex mt-3">
+                                                    <div class="flex-shrink-0">
+                                                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                                             style="width: 40px; height: 40px;">
+                                                            <span class="text-white fw-bold">{{ reply.author[0] }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex-grow-1 ms-3">
+                                                        <div class="d-flex justify-content-between">
+                                                            <h6 class="mt-0">{{ reply.author }}</h6>
+                                                            <small class="text-muted">{{ reply.date.strftime('%d.%m.%Y %H:%M') if reply.date else 'Только что' }}</small>
+                                                        </div>
+                                                        <p class="mb-0">{{ reply.text }}</p>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Пока нет комментариев. Будьте первым!</p>
+                {% endif %}
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}
