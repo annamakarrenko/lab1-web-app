@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <h1 class="my-4">Проверка номера телефона</h1>
+    
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Введите номер телефона</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label for="phone" class="form-label">Номер телефона</label>
+            <input type="text" 
+                   class="form-control {% if error %}is-invalid{% endif %}" 
+                   id="phone" 
+                   name="phone" 
+                   value="{{ phone_input or '' }}"
+                   placeholder="+7 (123) 456-75-90">
+            {% if error %}
+              <div class="invalid-feedback">
+                {{ error }}
+              </div>
+            {% endif %}
+            <div class="form-text">
+              Допустимые форматы: +7 (123) 456-75-90, 8(123)4567590, 123.456.75.90
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Проверить</button>
+        </form>
+      </div>
+    </div>
+    
+    {% if formatted_phone %}
+      <div class="card mt-4 bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">✓ Отформатированный номер</h5>
+          <p class="card-text fs-3">{{ formatted_phone }}</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

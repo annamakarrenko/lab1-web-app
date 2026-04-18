@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <h1 class="my-4">Параметры URL</h1>
+    
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Переданные параметры</h5>
+      </div>
+      <div class="card-body">
+        {% if params %}
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>Параметр</th>
+                <th>Значение</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for key, value in params.items() %}
+                <tr>
+                  <td><code>{{ key }}</code></td>
+                  <td><code>{{ value }}</code></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="text-muted">Параметры не переданы. Пример использования: <code>/url-params?name=John&age=25</code></p>
+        {% endif %}
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <h5>Примеры для тестирования:</h5>
+      <ul>
+        <li><a href="{{ url_for('url_params') }}">Без параметров</a></li>
+        <li><a href="{{ url_for('url_params', a=1, b=2, c=3) }}">a=1, b=2, c=3</a></li>
+        <li><a href="{{ url_for('url_params', name='Anna', city='Moscow') }}">name=Anna, city=Moscow</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
