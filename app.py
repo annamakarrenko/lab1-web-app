@@ -3,11 +3,14 @@ import random
 import re
 from datetime import datetime
 from functools import lru_cache
-from flask import Flask, render_template, request, make_response, redirect, url_for
+from flask import Flask, render_template, request, make_response, redirect, url_for, session, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from faker import Faker
+from models import User
 
 fake = Faker()
 
+# Получаем путь к текущей директории
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 templates_path = os.path.join(base_dir, 'templates')
@@ -21,6 +24,22 @@ if not os.path.exists(static_path):
 app = Flask(__name__,
             template_folder=templates_path,
             static_folder=static_path)
+
+# Секретный ключ для сессий 
+app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production-2026'
+
+# Инициализация Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Для доступа к этой странице необходимо войти в систему.'
+login_manager.login_message_category = 'warning'
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Загрузка пользователя по ID для Flask-Login"""
+    return User.get(user_id)
+
 application = app
 
 images_ids = [
@@ -93,19 +112,16 @@ def about():
 def page_not_found(e):
     return render_template('404.html'), 404
 
-# 1. Параметры URL
 @app.route('/url-params')
 def url_params():
     params = dict(request.args)
     return render_template('url_params.html', title='Параметры URL', params=params)
 
-# 2. Заголовки запроса
 @app.route('/headers')
 def headers():
     headers_dict = dict(request.headers)
     return render_template('headers.html', title='Заголовки запроса', headers=headers_dict)
 
-# 3. Cookie
 @app.route('/cookies')
 def cookies_page():
     cookies_dict = dict(request.cookies)
@@ -115,21 +131,16 @@ def cookies_page():
 
 @app.route('/set-cookie')
 def set_cookie():
-    # Создаем ответ с перенаправлением на страницу cookie
     response = make_response(redirect(url_for('cookies_page')))
-    # Устанавливаем cookie на 1 час
     response.set_cookie('user_theme', 'dark', max_age=3600)
     return response
 
 @app.route('/delete-cookie')
 def delete_cookie():
-    # Создаем ответ с перенаправлением на страницу cookie
     response = make_response(redirect(url_for('cookies_page')))
-    # Удаляем cookie
     response.delete_cookie('user_theme')
     return response
 
-# 4. Параметры формы
 @app.route('/form-params', methods=['GET', 'POST'])
 def form_params():
     form_data = None
@@ -137,41 +148,29 @@ def form_params():
         form_data = dict(request.form)
     return render_template('form_params.html', title='Параметры формы', form_data=form_data)
 
-# 5. Проверка номера телефона (с валидацией)
 def validate_phone(phone):
-    """
-    Валидация и форматирование номера телефона
-    Возвращает: (отформатированный_номер, сообщение_об_ошибке)
-    """
     if not phone:
         return None, 'Недопустимый ввод. Введите номер телефона.'
     
-    # Проверка на недопустимые символы
-    # Разрешенные символы: цифры, +, пробелы, скобки, дефисы, точки
     allowed_chars_pattern = r'[^\d\+\s\(\)\-\.]'
     invalid_chars = re.findall(allowed_chars_pattern, phone)
     if invalid_chars:
         return None, 'Недопустимый ввод. В номере телефона встречаются недопустимые символы.'
     
-    # Извлекаем все цифры из номера
     digits = re.sub(r'\D', '', phone)
     
-    # Проверка количества цифр
     if len(digits) not in [10, 11]:
         return None, 'Недопустимый ввод. Неверное количество цифр.'
     
-    # Проверка для 11-значных номеров (должны начинаться с 7 или 8)
     if len(digits) == 11:
         if digits[0] not in ['7', '8']:
             return None, 'Недопустимый ввод. Неверное количество цифр.'
-        # Убираем первую цифру (7 или 8)
         number = digits[1:]
     elif len(digits) == 10:
         number = digits
     else:
         return None, 'Недопустимый ввод. Неверное количество цифр.'
     
-    # Форматируем номер в вид 8-XXX-XXX-XX-XX
     formatted = f"8-{number[:3]}-{number[3:6]}-{number[6:8]}-{number[8:]}"
     return formatted, None
 
@@ -188,6 +187,61 @@ def phone_form():
     return render_template('phone.html', title='Проверка телефона',
                          error=error, formatted_phone=formatted_phone, 
                          phone_input=phone_input)
+
+@app.route('/visit-counter')
+def visit_counter():
+    """Страница счётчика посещений (использует session)"""
+    count = session.get('visit_count', 0)
+    count += 1
+    session['visit_count'] = count
+    
+    return render_template('visit_counter.html', title='Счётчик посещений', visit_count=count)
+
+@app.route('/secret')
+@login_required
+def secret_page():
+    """Секретная страница (только для авторизованных пользователей)"""
+    secret_count = session.get('secret_visit_count', 0)
+    secret_count += 1
+    session['secret_visit_count'] = secret_count
+    
+    return render_template('secret.html', title='Секретная страница', visit_count=secret_count)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Страница входа в систему"""
+    if current_user.is_authenticated:
+        flash('Вы уже авторизованы!', 'info')
+        return redirect(url_for('index'))
+    
+    next_url = request.args.get('next')
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        remember = request.form.get('remember') == 'on'
+        
+        user = User.find_by_username(username)
+        
+        if user and user.password == password:
+            login_user(user, remember=remember)
+            flash(f'Добро пожаловать, {username}! Вы успешно вошли в систему.', 'success')
+            
+            if next_url:
+                return redirect(next_url)
+            return redirect(url_for('index'))
+        else:
+            flash('Неверное имя пользователя или пароль. Попробуйте снова.', 'danger')
+    
+    return render_template('login.html', title='Вход в систему')
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Выход из системы"""
+    logout_user()
+    flash('Вы успешно вышли из системы.', 'info')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

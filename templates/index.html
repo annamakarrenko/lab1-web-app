@@ -3,28 +3,87 @@
 {% block content %}
 <div class="row">
   <div class="col-lg-12">
-    <h1 class="my-5">Лабораторная работа №2. Работа с данными запроса</h1>
-
-    <h3>1. Отображение данных запроса</h3>
-    <p>Добавлены страницы:</p>
-    <ul>
-      <li><a href="{{ url_for('url_params', a=1, b=2, name='test') }}">Параметры URL</a> (пример с параметрами a=1, b=2, name=test)</li>
-      <li><a href="{{ url_for('headers') }}">Заголовки запроса</a></li>
-      <li><a href="{{ url_for('cookies_page') }}">Cookie</a> — установка и удаление куки 'user_theme'</li>
-      <li><a href="{{ url_for('form_params') }}">Параметры формы</a> — отправка POST запроса</li>
-    </ul>
-
-    <h3>2. Форма с обработкой ошибок (проверка номера телефона)</h3>
-    <p>Форма для ввода номера телефона с валидацией:</p>
-    <ul>
-      <li>Длина: 10-11 цифр</li>
-      <li>Допустимые символы: цифры, +, пробелы, скобки, дефисы, точки</li>
-      <li>Правила: 11 цифр если начинается с +7 или 8, иначе 10 цифр</li>
-    </ul>
-    <p><a href="{{ url_for('phone_form') }}" class="btn btn-primary">Перейти к проверке телефона</a></p>
-
-    <h3>3. Тесты</h3>
-    <p>Добавлено 19 тестов для проверки функционала.</p>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    <h1 class="my-5 text-center">Лабораторные работы по Flask</h1>
+    
+    <div class="row mt-4">
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">📝 Лабораторная работа №1</h4>
+          </div>
+          <div class="card-body">
+            <h5>Блог с постами и комментариями</h5>
+            <ul>
+              <li>Отображение постов</li>
+              <li>Комментарии и ответы</li>
+              <li>Форма добавления комментариев</li>
+            </ul>
+            <a href="{{ url_for('posts') }}" class="btn btn-primary">Перейти к постам →</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-header bg-success text-white">
+            <h4 class="mb-0">🔍 Лабораторная работа №2</h4>
+          </div>
+          <div class="card-body">
+            <h5>Работа с данными запроса</h5>
+            <ul>
+              <li>Параметры URL</li>
+              <li>Заголовки запроса</li>
+              <li>Cookie</li>
+              <li>Параметры формы</li>
+              <li>Валидация телефона</li>
+            </ul>
+            <a href="{{ url_for('url_params') }}" class="btn btn-success">Перейти →</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">🔐 Лабораторная работа №3</h4>
+          </div>
+          <div class="card-body">
+            <h5>Аутентификация и сессии</h5>
+            <ul>
+              <li>Счётчик посещений (session)</li>
+              <li>Вход/выход (Flask-Login)</li>
+              <li>Секретная страница</li>
+              <li>Запомнить меня</li>
+            </ul>
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('secret_page') }}" class="btn btn-warning">🔓 Секретная страница</a>
+            {% else %}
+              <a href="{{ url_for('login') }}" class="btn btn-warning">🔑 Войти</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="alert alert-info mt-4 text-center">
+      {% if current_user.is_authenticated %}
+        ✅ Вы вошли как <strong>{{ current_user.username }}</strong> | <a href="{{ url_for('logout') }}">Выйти</a>
+      {% else %}
+        🔒 Вы не авторизованы | <a href="{{ url_for('login') }}">Войти</a> (логин: user, пароль: qwerty)
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}
