@@ -53,9 +53,11 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="{{ url_for('visit_counter') }}">🔢 Счётчик посещений</a></li>
+                  <!-- Секретная страница видна всем -->
+                  <li><a class="dropdown-item" href="{{ url_for('secret_page') }}">🤫 Секретная страница</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <!-- Аутентификация -->
                   {% if current_user.is_authenticated %}
-                    <li><a class="dropdown-item" href="{{ url_for('secret_page') }}">🤫 Секретная страница</a></li>
-                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-success" href="{{ url_for('logout') }}">🚪 Выйти ({{ current_user.username }})</a></li>
                   {% else %}
                     <li><a class="dropdown-item" href="{{ url_for('login') }}">🔑 Войти</a></li>
