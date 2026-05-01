@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macros %}
+{% block content %}
+<div class="container">
+    <h1 class="my-4">{% if user %}✏️ Редактирование пользователя{% else %}➕ Создание пользователя{% endif %}</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                {{ macros.render_form(user, roles, errors) }}
+                <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                <a href="{{ url_for('user_list') }}" class="btn btn-secondary">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

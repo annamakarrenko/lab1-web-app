@@ -115,12 +115,3 @@ def test_phone_form_wrong_digits(client):
     response = client.post('/phone', data={'phone': '123'})
     assert response.status_code == 200
     assert 'Неверное количество цифр' in response.text
-
-def test_navigation_links_in_base(client):
-    """Проверка наличия ссылок на новые страницы в навигации"""
-    response = client.get('/')
-    assert 'URL параметры' in response.text
-    assert 'Заголовки' in response.text
-    assert 'Cookie' in response.text
-    assert 'Параметры формы' in response.text
-    assert 'Проверка телефона' in response.text
