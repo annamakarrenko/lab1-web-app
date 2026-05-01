@@ -2,8 +2,6 @@ import pytest
 from app import app, db, User, Role
 from werkzeug.security import check_password_hash
 
-# ==================== ФИКСТУРЫ ====================
-
 @pytest.fixture
 def client():
     """Тестовый клиент с временной БД"""
@@ -56,7 +54,7 @@ def auth_client(client):
     return client
 
 
-# ==================== ТЕСТЫ МОДЕЛЕЙ ====================
+# ТЕСТЫ МОДЕЛЕЙ 
 
 def test_user_model_creation():
     """Тест создания пользователя"""
@@ -86,7 +84,7 @@ def test_role_model():
         assert role.name == 'test_role'
 
 
-# ==================== ТЕСТЫ ВАЛИДАЦИИ ====================
+# ТЕСТЫ ВАЛИДАЦИИ
 
 def test_validate_login():
     """Тест валидации логина"""
@@ -144,7 +142,7 @@ def test_validate_name():
     assert 'не может быть пустым' in msg
 
 
-# ==================== ТЕСТЫ МАРШРУТОВ ====================
+# ТЕСТЫ МАРШРУТОВ
 
 def test_user_list_page(client):
     """Тест страницы списка пользователей"""
@@ -253,7 +251,7 @@ def test_user_delete_success(auth_client):
         assert deleted_user is None
 
 
-# ==================== ТЕСТЫ СМЕНЫ ПАРОЛЯ ====================
+# ТЕСТЫ СМЕНЫ ПАРОЛЯ 
 
 def test_change_password_page_requires_auth(client):
     """Тест: неавторизованный не может сменить пароль"""
@@ -304,7 +302,7 @@ def test_change_password_success(auth_client):
     assert 'Пароль успешно изменён' in response.text
 
 
-# ==================== ТЕСТЫ ПРАВ ДОСТУПА ====================
+# ТЕСТЫ ПРАВ ДОСТУПА 
 
 def test_edit_buttons_visible_for_authenticated(auth_client):
     """Тест: авторизованный видит кнопки редактирования и удаления"""
@@ -327,7 +325,7 @@ def test_navbar_links_authenticated(auth_client):
     assert 'Выйти' in response.text
 
 
-# ==================== ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ ====================
+# ДОПОЛНИТЕЛЬНЫЕ ТЕСТЫ 
 
 def test_user_full_name_without_last_name():
     """Тест ФИО при отсутствии фамилии"""

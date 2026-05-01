@@ -10,7 +10,7 @@ from faker import Faker
 
 fake = Faker()
 
-# ----------------------------- Конфигурация -----------------------------
+# Конфигурация
 base_dir = os.path.dirname(os.path.abspath(__file__))
 templates_path = os.path.join(base_dir, 'templates')
 if not os.path.exists(templates_path):
@@ -26,7 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# ----------------------------- Модели БД -----------------------------
+# Модели БД 
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +74,7 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
-# ----------------------------- Функции валидации -----------------------------
+# Функции валидации 
 def validate_login(login):
     if not login or len(login) < 5:
         return False, 'Логин должен содержать не менее 5 символов'
@@ -105,7 +105,7 @@ def validate_name(name, field_name):
         return False, f'Поле "{field_name}" не может быть пустым'
     return True, ''
 
-# ----------------------------- Инициализация БД -----------------------------
+# Инициализация БД 
 def init_db():
     with app.app_context():
         db.create_all()
@@ -130,7 +130,7 @@ def init_db():
 
 init_db()
 
-# ----------------------------- Flask-Login -----------------------------
+# Flask-Login 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -141,10 +141,8 @@ login_manager.login_message_category = 'warning'
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# ----------------------------- Макрос для форм -----------------------------
-# Создаём шаблон macros.html отдельным файлом (см. ниже)
 
-# ----------------------------- Старые маршруты (ЛР1-3) -----------------------------
+# Старые маршруты (ЛР1-3) 
 images_ids = ['7d4e9175-95ea-4c5f-8be5-92a6b708bb3c', '2d2ab7df-cdbc-48a8-a936-35bba702def5', '6e12f3de-d5fd-4ebb-855b-8cbc485278b7', 'afc2cfe7-5cac-4b80-9b9a-d5c65ef0c728', 'cab5b7f2-774e-4884-a200-0c0180fa777f']
 
 def generate_comments(replies=True):
@@ -282,7 +280,7 @@ def logout():
     flash('Вы вышли из системы.', 'info')
     return redirect(url_for('index'))
 
-# ----------------------------- НОВЫЕ МАРШРУТЫ ЛР4 -----------------------------
+# НОВЫЕ МАРШРУТЫ ЛР4 
 @app.route('/users')
 def user_list():
     users = User.query.all()
