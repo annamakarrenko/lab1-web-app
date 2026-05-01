@@ -426,5 +426,6 @@ def change_password():
                 return redirect(url_for('index'))
     return render_template('change_password.html', errors=errors)
 
+application = app
 if __name__ == '__main__':
     app.run(debug=True)
