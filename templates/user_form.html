@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% import 'macros.html' as macros %}
 {% block content %}
 <div class="container">
     <h1 class="my-4">{% if user %}✏️ Редактирование пользователя{% else %}➕ Создание пользователя{% endif %}</h1>
@@ -15,7 +14,49 @@
     <div class="card">
         <div class="card-body">
             <form method="POST">
-                {{ macros.render_form(user, roles, errors) }}
+                <div class="mb-3">
+                    <label for="last_name" class="form-label">Фамилия</label>
+                    <input type="text" class="form-control {% if errors.last_name %}is-invalid{% endif %}" id="last_name" name="last_name" value="{{ user.last_name if user else '' }}" required>
+                    {% if errors.last_name %}<div class="invalid-feedback">{{ errors.last_name }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="first_name" class="form-label">Имя</label>
+                    <input type="text" class="form-control {% if errors.first_name %}is-invalid{% endif %}" id="first_name" name="first_name" value="{{ user.first_name if user else '' }}" required>
+                    {% if errors.first_name %}<div class="invalid-feedback">{{ errors.first_name }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="patronymic" class="form-label">Отчество</label>
+                    <input type="text" class="form-control" id="patronymic" name="patronymic" value="{{ user.patronymic if user else '' }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="role_id" class="form-label">Роль</label>
+                    <select class="form-select" id="role_id" name="role_id" {% if user and not current_user.has_role('admin') %}disabled{% endif %}>
+                        <option value="">-- Без роли --</option>
+                        {% for role in roles %}
+                            <option value="{{ role.id }}" {% if user and role in user.roles %}selected{% endif %}>{{ role.name }} - {{ role.description }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if user and not current_user.has_role('admin') %}
+                        <div class="form-text text-muted">Только администратор может менять роль</div>
+                    {% endif %}
+                </div>
+                
+                {% if not user %}
+                <div class="mb-3">
+                    <label for="login" class="form-label">Логин</label>
+                    <input type="text" class="form-control {% if errors.login %}is-invalid{% endif %}" id="login" name="login" value="{{ request.form.login if request.form else '' }}" required>
+                    {% if errors.login %}<div class="invalid-feedback">{{ errors.login }}</div>{% endif %}
+                    <div class="form-text">Только латинские буквы и цифры, не менее 5 символов</div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Пароль</label>
+                    <input type="password" class="form-control {% if errors.password %}is-invalid{% endif %}" id="password" name="password" required>
+                    {% if errors.password %}<div class="invalid-feedback">{{ errors.password }}</div>{% endif %}
+                    <div class="form-text">Не менее 8 символов, заглавные и строчные буквы, цифры, без пробелов</div>
+                </div>
+                {% endif %}
+                
                 <button type="submit" class="btn btn-primary">💾 Сохранить</button>
                 <a href="{{ url_for('user_list') }}" class="btn btn-secondary">Отмена</a>
             </form>

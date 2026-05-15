@@ -2,88 +2,121 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-lg-12">
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show mt-3" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-    
-    <h1 class="my-5 text-center">Лабораторные работы по Flask</h1>
-    
-    <div class="row mt-4">
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">📝 Лабораторная работа №1</h4>
-          </div>
-          <div class="card-body">
-            <h5>Блог с постами и комментариями</h5>
-            <ul>
-              <li>Отображение постов</li>
-              <li>Комментарии и ответы</li>
-              <li>Форма добавления комментариев</li>
-            </ul>
-            <a href="{{ url_for('posts') }}" class="btn btn-primary">Перейти к постам →</a>
-          </div>
+    <div class="col-lg-12">
+        <h1 class="my-5 text-center">Лабораторные работы по Flask</h1>
+        
+        <div class="alert alert-info">
+            <strong>🔑 Тестовые пользователи:</strong><br>
+            • Администратор: <code>admin</code> / <code>Admin123!</code><br>
+            • Обычный пользователь: <code>user</code> / <code>User123!</code>
         </div>
-      </div>
-      
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <div class="card-header bg-success text-white">
-            <h4 class="mb-0">🔍 Лабораторная работа №2</h4>
-          </div>
-          <div class="card-body">
-            <h5>Работа с данными запроса</h5>
-            <ul>
-              <li>Параметры URL</li>
-              <li>Заголовки запроса</li>
-              <li>Cookie</li>
-              <li>Параметры формы</li>
-              <li>Валидация телефона</li>
-            </ul>
-            <a href="{{ url_for('url_params') }}" class="btn btn-success">Перейти →</a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-md-4 mb-4">
-        <div class="card h-100">
-          <div class="card-header bg-warning text-dark">
-            <h4 class="mb-0">🔐 Лабораторная работа №3</h4>
-          </div>
-          <div class="card-body">
-            <h5>Аутентификация и сессии</h5>
-            <ul>
-              <li>Счётчик посещений (session)</li>
-              <li>Вход/выход (Flask-Login)</li>
-              <li>Секретная страница</li>
-              <li>Запомнить меня</li>
-            </ul>
+        
+        <div class="row mt-4">
+            <!-- ЛР1 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">📝 Лабораторная работа №1</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Блог с постами и комментариями</h5>
+                        <ul>
+                            <li>Отображение постов</li>
+                            <li>Комментарии и ответы</li>
+                            <li>Форма добавления комментариев</li>
+                        </ul>
+                        <a href="{{ url_for('posts') }}" class="btn btn-primary">Перейти к постам →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ЛР2 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">🔍 Лабораторная работа №2</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Работа с данными запроса</h5>
+                        <ul>
+                            <li>Параметры URL</li>
+                            <li>Заголовки запроса</li>
+                            <li>Cookie</li>
+                            <li>Параметры формы</li>
+                            <li>Валидация телефона</li>
+                        </ul>
+                        <a href="{{ url_for('url_params') }}" class="btn btn-success">Перейти →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ЛР3 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <h4 class="mb-0">🔐 Лабораторная работа №3</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Аутентификация и сессии</h5>
+                        <ul>
+                            <li>Счётчик посещений (session)</li>
+                            <li>Вход/выход (Flask-Login)</li>
+                            <li>Секретная страница</li>
+                            <li>Запомнить меня</li>
+                        </ul>
+                        <a href="{{ url_for('visit_counter') }}" class="btn btn-warning">Перейти →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ЛР4 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">👥 Лабораторная работа №4</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Управление пользователями (CRUD)</h5>
+                        <ul>
+                            <li> Создание, просмотр, редактирование и удаление пользователей</li>
+                            <li> Валидация логина и пароля</li>
+                            <li> Аутентификация через Flask-Login</li>
+                            <li> Смена пароля авторизованным пользователем</li>
+                            <li> Разграничение прав (админ/пользователь)</li>
+                        </ul>
+                        <a href="{{ url_for('user_list') }}" class="btn btn-info">Перейти к управлению пользователями →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ЛР5 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h4 class="mb-0">📊 Лабораторная работа №5</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>Авторизация и статистические отчёты</h5>
+                        <ul>
+                            <li> Авторизация пользователей (декоратор check_rights)</li>
+                            <li> Разграничение прав доступа (администратор / пользователь)</li>
+                            <li> Журнал посещений с пагинацией (before_request)</li>
+                            <li> Статистика по страницам (сортировка по убыванию)</li>
+                            <li> Статистика по пользователям</li>
+                            <li> Экспорт отчётов в CSV</li>
+                        </ul>
+                        <a href="{{ url_for('visit_logs.index') }}" class="btn btn-secondary">Перейти к журналу посещений →</a>
+                    </div>
+                </div>
+            </div>
+        
+        <div class="alert alert-secondary mt-4 text-center">
             {% if current_user.is_authenticated %}
-              <a href="{{ url_for('secret_page') }}" class="btn btn-warning">🔓 Секретная страница</a>
+                ✅ Вы вошли как <strong>{{ current_user.username }}</strong> ({{ current_user.get_role_names() | join(', ') }}) | <a href="{{ url_for('logout') }}">Выйти</a>
             {% else %}
-              <a href="{{ url_for('login') }}" class="btn btn-warning">🔑 Войти</a>
+                🔒 Вы не авторизованы | <a href="{{ url_for('login') }}">Войти</a>
             {% endif %}
-          </div>
         </div>
-      </div>
     </div>
-    
-    <div class="alert alert-info mt-4 text-center">
-      {% if current_user.is_authenticated %}
-        ✅ Вы вошли как <strong>{{ current_user.username }}</strong> | <a href="{{ url_for('logout') }}">Выйти</a>
-      {% else %}
-        🔒 Вы не авторизованы | <a href="{{ url_for('login') }}">Войти</a> (логин: user, пароль: qwerty)
-      {% endif %}
-    </div>
-  </div>
 </div>
 {% endblock %}

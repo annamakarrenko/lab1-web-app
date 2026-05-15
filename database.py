@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -9,6 +9,7 @@ user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('role_id', db.Integer, db.ForeignKey('roles.id'), primary_key=True)
 )
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -22,23 +23,43 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     roles = db.relationship('Role', secondary=user_roles, backref=db.backref('users', lazy='dynamic'))
+    visits = db.relationship('VisitLog', backref='user', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
-        from werkzeug.security import check_password_hash
         return check_password_hash(self.password_hash, password)
     
     def get_full_name(self):
         name_parts = [self.last_name, self.first_name, self.patronymic]
         return ' '.join([p for p in name_parts if p]) or 'Без имени'
     
+    def full_name(self):
+        """Алиас для get_full_name (для совместимости с шаблонами)"""
+        return self.get_full_name()
+    
     def get_role_names(self):
         return [role.name for role in self.roles]
     
     def get_id(self):
         return str(self.id)
+    
+    @property
+    def is_authenticated(self):
+        return True
+    
+    @property
+    def is_active(self):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+    
+    def has_role(self, role_name):
+        """Проверка наличия роли у пользователя"""
+        return any(role.name == role_name for role in self.roles)
 
 
 class Role(db.Model):
@@ -50,6 +71,18 @@ class Role(db.Model):
     
     def __repr__(self):
         return f'<Role {self.name}>'
+
+
+class VisitLog(db.Model):
+    __tablename__ = 'visit_logs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    path = db.Column(db.String(200), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<VisitLog {self.path} by user {self.user_id}>'
 
 
 def init_db(app):
@@ -68,7 +101,7 @@ def init_db(app):
                 db.session.add(role)
             db.session.commit()
         
-        # Добавляем тестового пользователя admin (для ЛР4)
+        # Добавляем тестового пользователя admin
         if User.query.filter_by(username='admin').first() is None:
             admin = User(
                 username='admin',
@@ -81,7 +114,7 @@ def init_db(app):
             db.session.add(admin)
             db.session.commit()
         
-        # Добавляем тестового пользователя user с паролем qwerty (для ЛР3)
+        # Добавляем тестового пользователя user
         if User.query.filter_by(username='user').first() is None:
             test_user = User(
                 username='user',
@@ -89,7 +122,7 @@ def init_db(app):
                 first_name='Петр',
                 patronymic='Петрович'
             )
-            test_user.set_password('qwerty')  # Пароль для ЛР3
+            test_user.set_password('User123!')
             test_user.roles.append(Role.query.filter_by(name='user').first())
             db.session.add(test_user)
             db.session.commit()

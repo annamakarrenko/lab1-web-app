@@ -1,16 +1,16 @@
 import os
+import random
 import re
 from datetime import datetime
-from functools import lru_cache
+from functools import lru_cache, wraps
 from flask import Flask, render_template, request, make_response, redirect, url_for, session, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from faker import Faker
 
 fake = Faker()
 
-# Конфигурация
+# ----------------------------- Конфигурация -----------------------------
 base_dir = os.path.dirname(os.path.abspath(__file__))
 templates_path = os.path.join(base_dir, 'templates')
 if not os.path.exists(templates_path):
@@ -24,57 +24,11 @@ app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production-2026'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# Инициализация БД
+from database import db, User, Role, VisitLog
+db.init_app(app)
 
-# Модели БД 
-class Role(db.Model):
-    __tablename__ = 'roles'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    description = db.Column(db.String(200))
-
-    def __repr__(self):
-        return f'<Role {self.name}>'
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    login = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
-    last_name = db.Column(db.String(50))
-    first_name = db.Column(db.String(50), nullable=False)
-    middle_name = db.Column(db.String(50))
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    role = db.relationship('Role', backref='users')
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def full_name(self):
-        parts = [self.last_name or '', self.first_name or '', self.middle_name or '']
-        return ' '.join(p for p in parts if p).strip()
-
-    def get_id(self):
-        return str(self.id)
-
-    @property
-    def is_authenticated(self):
-        return True
-
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
-
-# Функции валидации 
+# ----------------------------- Функции валидации -----------------------------
 def validate_login(login):
     if not login or len(login) < 5:
         return False, 'Логин должен содержать не менее 5 символов'
@@ -100,37 +54,58 @@ def validate_password(password):
     return True, ''
 
 def validate_name(name, field_name):
-    """Валидация имени/фамилии/отчества"""
     if not name or not name.strip():
         return False, f'Поле "{field_name}" не может быть пустым'
     return True, ''
 
-# Инициализация БД 
-def init_db():
-    with app.app_context():
-        db.create_all()
-        # Создаём роли только если их нет
-        roles = [
-            Role(name='admin', description='Администратор системы'),
-            Role(name='user', description='Обычный пользователь'),
-            Role(name='moderator', description='Модератор')
-        ]
-        for role in roles:
-            if not Role.query.filter_by(name=role.name).first():
-                db.session.add(role)
-        db.session.commit()
-        
-        # Создаём тестового пользователя только если его нет
-        if not User.query.filter_by(login='admin').first():
-            admin = User(login='admin', first_name='Администратор', last_name='Администраторов')
-            admin.set_password('Admin123!')
-            admin.role = Role.query.filter_by(name='admin').first()
-            db.session.add(admin)
-        db.session.commit()
 
-init_db()
+# ----------------------------- Декоратор проверки прав -----------------------------
+def check_rights(required_role=None):
+    """Декоратор для проверки прав доступа"""
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated:
+                flash('Для доступа к этой странице необходимо войти в систему.', 'warning')
+                return redirect(url_for('login', next=request.url))
+            
+            if required_role and not current_user.has_role(required_role):
+                flash('У вас недостаточно прав для доступа к данной странице.', 'danger')
+                return redirect(url_for('index'))
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
-# Flask-Login 
+
+# ----------------------------- Функция логирования посещений -----------------------------
+def log_visit(path):
+    """Логирование посещения страницы"""
+    try:
+        log = VisitLog(
+            path=path,
+            user_id=current_user.id if current_user.is_authenticated else None
+        )
+        db.session.add(log)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+@app.before_request
+def before_request():
+    """Логируем все запросы к приложению (кроме статики)"""
+    if not request.path.startswith('/static') and not request.path.startswith('/visit-logs'):
+        log_visit(request.path)
+
+
+# ----------------------------- Инициализация БД -----------------------------
+with app.app_context():
+    from database import init_db
+    init_db(app)
+
+
+# ----------------------------- Flask-Login -----------------------------
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -141,8 +116,11 @@ login_manager.login_message_category = 'warning'
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
+# ----------------------------- Регистрация Blueprint -----------------------------
+from blueprints.visit_logs import visit_logs
+app.register_blueprint(visit_logs)
 
-# Старые маршруты (ЛР1-3) 
+# ----------------------------- Старые маршруты -----------------------------
 images_ids = ['7d4e9175-95ea-4c5f-8be5-92a6b708bb3c', '2d2ab7df-cdbc-48a8-a936-35bba702def5', '6e12f3de-d5fd-4ebb-855b-8cbc485278b7', 'afc2cfe7-5cac-4b80-9b9a-d5c65ef0c728', 'cab5b7f2-774e-4884-a200-0c0180fa777f']
 
 def generate_comments(replies=True):
@@ -265,11 +243,11 @@ def login():
         login_input = request.form.get('username')
         password = request.form.get('password')
         remember = request.form.get('remember') == 'on'
-        user = User.query.filter_by(login=login_input).first()
+        user = User.query.filter_by(username=login_input).first()
         if user and user.check_password(password):
             login_user(user, remember=remember)
-            flash(f'Добро пожаловать, {user.login}!', 'success')
-            return redirect(next_url or url_for('index'))
+            flash(f'Добро пожаловать, {user.username}!', 'success')
+            return redirect(next_url or url_for('user_list'))
         flash('Неверное имя пользователя или пароль.', 'danger')
     return render_template('login.html', title='Вход в систему')
 
@@ -280,7 +258,7 @@ def logout():
     flash('Вы вышли из системы.', 'info')
     return redirect(url_for('index'))
 
-# НОВЫЕ МАРШРУТЫ ЛР4 
+# ----------------------------- НОВЫЕ МАРШРУТЫ ЛР4 -----------------------------
 @app.route('/users')
 def user_list():
     users = User.query.all()
@@ -296,6 +274,7 @@ def user_view(user_id):
 
 @app.route('/users/create', methods=['GET', 'POST'])
 @login_required
+@check_rights('admin')
 def user_create():
     roles = Role.query.all()
     errors = {}
@@ -304,26 +283,23 @@ def user_create():
         password = request.form.get('password', '')
         last_name = request.form.get('last_name', '').strip()
         first_name = request.form.get('first_name', '').strip()
-        middle_name = request.form.get('middle_name', '').strip()
+        patronymic = request.form.get('patronymic', '').strip()
         role_id = request.form.get('role_id', type=int)
 
         is_valid = True
-        # Валидация логина
         valid, msg = validate_login(login)
         if not valid:
             errors['login'] = msg
             is_valid = False
-        elif User.query.filter_by(login=login).first():
+        elif User.query.filter_by(username=login).first():
             errors['login'] = 'Пользователь с таким логином уже существует'
             is_valid = False
 
-        # Валидация пароля
         valid, msg = validate_password(password)
         if not valid:
             errors['password'] = msg
             is_valid = False
 
-        # Валидация имени и фамилии
         valid, msg = validate_name(first_name, 'Имя')
         if not valid:
             errors['first_name'] = msg
@@ -335,11 +311,15 @@ def user_create():
 
         if is_valid:
             try:
-                new_user = User(login=login, first_name=first_name, last_name=last_name, middle_name=middle_name, role_id=role_id if role_id and role_id > 0 else None)
+                new_user = User(username=login, first_name=first_name, last_name=last_name, patronymic=patronymic)
                 new_user.set_password(password)
+                if role_id and role_id > 0:
+                    role = Role.query.get(role_id)
+                    if role:
+                        new_user.roles.append(role)
                 db.session.add(new_user)
                 db.session.commit()
-                flash(f'Пользователь {new_user.full_name()} успешно создан', 'success')
+                flash(f'Пользователь {new_user.get_full_name()} успешно создан', 'success')
                 return redirect(url_for('user_list'))
             except Exception as e:
                 flash(f'Ошибка при создании пользователя: {str(e)}', 'danger')
@@ -353,12 +333,18 @@ def user_edit(user_id):
     if not user:
         flash('Пользователь не найден', 'danger')
         return redirect(url_for('user_list'))
+    
+    # Проверка прав: админ может редактировать любого, обычный пользователь только себя
+    if not current_user.has_role('admin') and current_user.id != user.id:
+        flash('У вас недостаточно прав для доступа к данной странице.', 'danger')
+        return redirect(url_for('index'))
+    
     roles = Role.query.all()
     errors = {}
     if request.method == 'POST':
         last_name = request.form.get('last_name', '').strip()
         first_name = request.form.get('first_name', '').strip()
-        middle_name = request.form.get('middle_name', '').strip()
+        patronymic = request.form.get('patronymic', '').strip()
         role_id = request.form.get('role_id', type=int)
 
         is_valid = True
@@ -375,25 +361,35 @@ def user_edit(user_id):
             try:
                 user.first_name = first_name
                 user.last_name = last_name
-                user.middle_name = middle_name
-                user.role_id = role_id if role_id and role_id > 0 else None
+                user.patronymic = patronymic
+                
+                # Только админ может менять роли
+                if current_user.has_role('admin'):
+                    user.roles.clear()
+                    if role_id and role_id > 0:
+                        role = Role.query.get(role_id)
+                        if role:
+                            user.roles.append(role)
+                
                 db.session.commit()
-                flash(f'Данные пользователя {user.full_name()} обновлены', 'success')
+                flash(f'Данные пользователя {user.get_full_name()} обновлены', 'success')
                 return redirect(url_for('user_list'))
             except Exception as e:
                 flash(f'Ошибка при обновлении: {str(e)}', 'danger')
                 db.session.rollback()
+    
     return render_template('user_form.html', user=user, roles=roles, errors=errors)
 
 @app.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_required
+@check_rights('admin')
 def user_delete(user_id):
     user = db.session.get(User, user_id)
     if not user:
         flash('Пользователь не найден', 'danger')
         return redirect(url_for('user_list'))
     try:
-        name = user.full_name()
+        name = user.get_full_name()
         db.session.delete(user)
         db.session.commit()
         flash(f'Пользователь {name} успешно удалён', 'success')
@@ -426,6 +422,9 @@ def change_password():
                 return redirect(url_for('index'))
     return render_template('change_password.html', errors=errors)
 
+
+# Для Render
 application = app
+
 if __name__ == '__main__':
     app.run(debug=True)
