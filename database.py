@@ -4,7 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
-# Таблица связи многие-ко-многим для ролей пользователей
 user_roles = db.Table('user_roles',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('role_id', db.Integer, db.ForeignKey('roles.id'), primary_key=True)
@@ -36,7 +35,6 @@ class User(db.Model):
         return ' '.join([p for p in name_parts if p]) or 'Без имени'
     
     def full_name(self):
-        """Алиас для get_full_name (для совместимости с шаблонами)"""
         return self.get_full_name()
     
     def get_role_names(self):
@@ -58,7 +56,7 @@ class User(db.Model):
         return False
     
     def has_role(self, role_name):
-        """Проверка наличия роли у пользователя"""
+        """проверка наличия роли у пользователя"""
         return any(role.name == role_name for role in self.roles)
 
 
@@ -86,7 +84,6 @@ class VisitLog(db.Model):
 
 
 def init_db(app):
-    """Создание таблиц и добавление тестовых данных"""
     with app.app_context():
         db.create_all()
         
@@ -101,28 +98,29 @@ def init_db(app):
                 db.session.add(role)
             db.session.commit()
         
-        # Добавляем тестового пользователя admin
-        if User.query.filter_by(username='admin').first() is None:
+        # Добавляем администратора
+        if not User.query.filter_by(username='admin').first():
             admin = User(
                 username='admin',
-                last_name='Иванов',
-                first_name='Иван',
-                patronymic='Иванович'
+                first_name='Админ',
+                last_name='Админ'
             )
             admin.set_password('Admin123!')
             admin.roles.append(Role.query.filter_by(name='admin').first())
             db.session.add(admin)
             db.session.commit()
+            print("Администратор создан: admin / Admin123!")
         
-        # Добавляем тестового пользователя user
-        if User.query.filter_by(username='user').first() is None:
-            test_user = User(
+        # ДОБАВЛЯЕМ ОБЫЧНОГО ПОЛЬЗОВАТЕЛЯ
+        if not User.query.filter_by(username='user').first():
+            user = User(
                 username='user',
-                last_name='Петров',
-                first_name='Петр',
+                first_name='Иван',
+                last_name='Иванов',
                 patronymic='Петрович'
             )
-            test_user.set_password('User123!')
-            test_user.roles.append(Role.query.filter_by(name='user').first())
-            db.session.add(test_user)
+            user.set_password('qwerty')
+            user.roles.append(Role.query.filter_by(name='user').first())
+            db.session.add(user)
             db.session.commit()
+            print("Обычный пользователь создан: user / qwerty")
