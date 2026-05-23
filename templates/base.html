@@ -22,18 +22,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <!-- Главная -->
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">🏠 Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}"> Главная</a></li>
                     
-                    <!-- ЛР4: CRUD пользователей -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="lab4Dropdown" role="button" data-bs-toggle="dropdown">
-                            👥 ЛР4: CRUD
+                              ЛР4: CRUD
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('user_list') }}">📋 Список пользователей</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user_list') }}"> Список пользователей</a></li>
                             {% if current_user.is_authenticated %}
-                                <li><a class="dropdown-item" href="{{ url_for('user_create') }}">➕ Создать пользователя</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user_create') }}"> Создать пользователя</a></li>
                             {% endif %}
                         </ul>
                     </li>
@@ -41,21 +39,21 @@
                     <!-- ЛР5: Журнал посещений и отчёты -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="lab5Dropdown" role="button" data-bs-toggle="dropdown">
-                            📊 ЛР5: отчёты
+                              ЛР5: отчёты
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.index') }}">📜 Журнал посещений</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.page_stats') }}">📈 Статистика по страницам</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.user_stats') }}">👤 Статистика по пользователям</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.index') }}"> Журнал посещений</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.page_stats') }}"> Статистика по страницам</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('visit_logs.user_stats') }}"> Статистика по пользователям</a></li>
                         </ul>
                     </li>
        
                     <!-- Аутентификация -->
                     {% if current_user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('change_password') }}">🔑 Сменить пароль</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">🚪 Выйти</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('change_password') }}"> Сменить пароль</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}"> Выйти</a></li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">🔑 Войти</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"> Войти</a></li>
                     {% endif %}
                 </ul>
             </div>

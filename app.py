@@ -10,7 +10,6 @@ from faker import Faker
 
 fake = Faker()
 
-# ----------------------------- Конфигурация -----------------------------
 base_dir = os.path.dirname(os.path.abspath(__file__))
 templates_path = os.path.join(base_dir, 'templates')
 if not os.path.exists(templates_path):
@@ -28,7 +27,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 from database import db, User, Role, VisitLog
 db.init_app(app)
 
-# ----------------------------- Функции валидации -----------------------------
 def validate_login(login):
     if not login or len(login) < 5:
         return False, 'Логин должен содержать не менее 5 символов'
@@ -59,7 +57,7 @@ def validate_name(name, field_name):
     return True, ''
 
 
-# ----------------------------- Декоратор проверки прав -----------------------------
+# Декоратор проверки прав 
 def check_rights(required_role=None):
     """Декоратор для проверки прав доступа"""
     def decorator(f):
@@ -78,7 +76,7 @@ def check_rights(required_role=None):
     return decorator
 
 
-# ----------------------------- Функция логирования посещений -----------------------------
+# Функция логирования посещений
 def log_visit(path):
     """Логирование посещения страницы"""
     try:
@@ -99,13 +97,13 @@ def before_request():
         log_visit(request.path)
 
 
-# ----------------------------- Инициализация БД -----------------------------
+# Инициализация БД
 with app.app_context():
     from database import init_db
     init_db(app)
 
 
-# ----------------------------- Flask-Login -----------------------------
+# Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -116,11 +114,11 @@ login_manager.login_message_category = 'warning'
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
-# ----------------------------- Регистрация Blueprint -----------------------------
+# Регистрация Blueprint
 from blueprints.visit_logs import visit_logs
 app.register_blueprint(visit_logs)
 
-# ----------------------------- Старые маршруты -----------------------------
+#Старые маршруты 
 images_ids = ['7d4e9175-95ea-4c5f-8be5-92a6b708bb3c', '2d2ab7df-cdbc-48a8-a936-35bba702def5', '6e12f3de-d5fd-4ebb-855b-8cbc485278b7', 'afc2cfe7-5cac-4b80-9b9a-d5c65ef0c728', 'cab5b7f2-774e-4884-a200-0c0180fa777f']
 
 def generate_comments(replies=True):
@@ -258,7 +256,7 @@ def logout():
     flash('Вы вышли из системы.', 'info')
     return redirect(url_for('index'))
 
-# ----------------------------- НОВЫЕ МАРШРУТЫ ЛР4 -----------------------------
+# МАРШРУТЫ ЛР4 
 @app.route('/users')
 def user_list():
     users = User.query.all()
@@ -334,7 +332,7 @@ def user_edit(user_id):
         flash('Пользователь не найден', 'danger')
         return redirect(url_for('user_list'))
     
-    # Проверка прав: админ может редактировать любого, обычный пользователь только себя
+    # проверка прав: админ может редактировать любого, обычный пользователь только себя
     if not current_user.has_role('admin') and current_user.id != user.id:
         flash('У вас недостаточно прав для доступа к данной странице.', 'danger')
         return redirect(url_for('index'))
@@ -422,8 +420,6 @@ def change_password():
                 return redirect(url_for('index'))
     return render_template('change_password.html', errors=errors)
 
-
-# Для Render
 application = app
 
 if __name__ == '__main__':

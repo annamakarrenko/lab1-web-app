@@ -6,9 +6,9 @@
         <h1 class="my-5 text-center">Лабораторные работы по Flask</h1>
         
         <div class="alert alert-info">
-            <strong>🔑 Тестовые пользователи:</strong><br>
-            • Администратор: <code>admin</code> / <code>Admin123!</code><br>
-            • Обычный пользователь: <code>user</code> / <code>User123!</code>
+            <strong> Тестовые пользователи:</strong><br>
+             Администратор: <code>admin</code> / <code>Admin123!</code><br>
+             Обычный пользователь: <code>user</code> / <code>User123!</code>
         </div>
         
         <div class="row mt-4">
@@ -16,7 +16,7 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">📝 Лабораторная работа №1</h4>
+                        <h4 class="mb-0"> Лабораторная работа №1</h4>
                     </div>
                     <div class="card-body">
                         <h5>Блог с постами и комментариями</h5>
@@ -34,7 +34,7 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-success text-white">
-                        <h4 class="mb-0">🔍 Лабораторная работа №2</h4>
+                        <h4 class="mb-0"> Лабораторная работа №2</h4>
                     </div>
                     <div class="card-body">
                         <h5>Работа с данными запроса</h5>
@@ -54,7 +54,7 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-warning text-dark">
-                        <h4 class="mb-0">🔐 Лабораторная работа №3</h4>
+                        <h4 class="mb-0"> Лабораторная работа №3</h4>
                     </div>
                     <div class="card-body">
                         <h5>Аутентификация и сессии</h5>
@@ -73,7 +73,7 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-info text-white">
-                        <h4 class="mb-0">👥 Лабораторная работа №4</h4>
+                        <h4 class="mb-0"> Лабораторная работа №4</h4>
                     </div>
                     <div class="card-body">
                         <h5>Управление пользователями (CRUD)</h5>
@@ -93,7 +93,7 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100">
                     <div class="card-header bg-secondary text-white">
-                        <h4 class="mb-0">📊 Лабораторная работа №5</h4>
+                        <h4 class="mb-0"> Лабораторная работа №5</h4>
                     </div>
                     <div class="card-body">
                         <h5>Авторизация и статистические отчёты</h5>
@@ -112,9 +112,9 @@
         
         <div class="alert alert-secondary mt-4 text-center">
             {% if current_user.is_authenticated %}
-                ✅ Вы вошли как <strong>{{ current_user.username }}</strong> ({{ current_user.get_role_names() | join(', ') }}) | <a href="{{ url_for('logout') }}">Выйти</a>
+                 Вы вошли как <strong>{{ current_user.username }}</strong> ({{ current_user.get_role_names() | join(', ') }}) | <a href="{{ url_for('logout') }}">Выйти</a>
             {% else %}
-                🔒 Вы не авторизованы | <a href="{{ url_for('login') }}">Войти</a>
+                 Вы не авторизованы | <a href="{{ url_for('login') }}">Войти</a>
             {% endif %}
         </div>
     </div>

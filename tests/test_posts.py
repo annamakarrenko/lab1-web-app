@@ -19,7 +19,6 @@ def test_posts_index_template(client, captured_templates, mocker, posts_list):
     3. В контекст передаётся список постов (ровно 1 пост)
     """
     with captured_templates as templates:
-        # Подменяем реальный список постов тестовыми данными
         mocker.patch(
             "app.posts_list",
             return_value=posts_list,
@@ -33,7 +32,6 @@ def test_posts_index_template(client, captured_templates, mocker, posts_list):
         assert context['title'] == 'Посты'
         assert len(context['posts']) == 1
 
-# ТЕСТЫ ДЛЯ СТРАНИЦЫ ОТДЕЛЬНОГО ПОСТА (post.html)
 def test_post_page_template(client, captured_templates, mocker, posts_list):
     """
     Проверяет, что страница отдельного поста:

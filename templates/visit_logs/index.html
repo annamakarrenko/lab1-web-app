@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="my-4">📜 Журнал посещений</h1>
+    <h1 class="my-4"> Журнал посещений</h1>
     
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -55,8 +55,8 @@
     {% endif %}
     
     <div class="mt-4">
-        <a href="{{ url_for('visit_logs.page_stats') }}" class="btn btn-primary">📊 Статистика по страницам</a>
-        <a href="{{ url_for('visit_logs.user_stats') }}" class="btn btn-success">👥 Статистика по пользователям</a>
+        <a href="{{ url_for('visit_logs.page_stats') }}" class="btn btn-primary"> Статистика по страницам</a>
+        <a href="{{ url_for('visit_logs.user_stats') }}" class="btn btn-success"> Статистика по пользователям</a>
     </div>
 </div>
 {% endblock %}
